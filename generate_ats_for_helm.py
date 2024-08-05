@@ -5,6 +5,7 @@ import torch
 from utils.model import get_model
 from utils.gen import chat_change_with_answer, get_pe
 import json
+import numpy as np
 
 
 from tqdm import tqdm
@@ -47,7 +48,7 @@ def get_ats(answer, q):
     ids, _ = get_tokenized_ids(answer, q)
     with torch.no_grad():
         op = model(torch.tensor(ids).to(model.device), output_attentions=True)
-    ats = [a.cpu()[0].tolist() for a in op['attentions']]
+    ats = np.array([a.cpu()[0] for a in op['attentions']])
     return ats
 
 
@@ -63,16 +64,12 @@ with open(f"./helm/data/{model_family}{model_type}/data.json", "r", encoding='ut
     data = json.load(f)
 result = {}
 for d in tqdm(data):
-    result[d] = {
-        "sentences": [],
-        "passage": None,
-    }
     prompt = data[d]["prompt"]
     prompt = tokenizer.decode(tokenizer(prompt.strip(), return_tensors='pt')['input_ids'].tolist()[0]).replace("<s>", "").replace("</s>", "")
-    for s in data[d]["sentences"]:
-        ats = get_ats(s["sentence"], prompt)
-        result[d]["sentences"].append(ats)
+
+    for i, sentence in enumerate(data[d]['sentences']):
+        act = get_ats(sentence['sentence'], prompt)
+        np.save(f"{ats_result_path}/at{d}.{i}_{sentence['label']}.npy", act)
+
     ats = get_ats(" ".join([t["sentence"] for t in data[d]["sentences"]]), prompt)
-    result[d]["passage"] = ats
-with open(f"{ats_result_path}/ats.json", "w+") as f:
-    json.dump(result, f)
+    np.save(f"{ats_result_path}/at{d}.p_{int(np.any([t["label"] for t in data[d]["sentences"]]))}.npy", act)

@@ -16,12 +16,7 @@ from utils.gen import chat_change_with_answer
 
 model, tokenizer, generation_config, at_id = get_model(model_type, model_family, 1)
 
-
-
-
-from tqdm import tqdm
-import json
-
+import numpy as np
 import json
 import torch
 from tqdm import tqdm
@@ -54,12 +49,12 @@ for data_type in ["train", "valid", "test"]:
     results = []
 
     for k in tqdm(data):
-        results.append({
-            "right": get_ats(k["original_text"], k["title"]),
-            "hallu": [get_ats(t, k["title"]) for  t in k["texts"]],
-        })
+        # results.append({
+        #     "right": get_ats(k["original_text"], k["title"]),
+        #     "hallu": [get_ats(t, k["title"]) for  t in k["texts"]],
+        # })
 
-    with open(f"{result_path}/ats_{data_type}.json", "w+") as f:
-        json.dump(results, f)
-
+        np.save(f"{result_path}/ats/at{k}.p_0.npy", get_ats(t, k["title"])) # right
+        for i, t in enumerate(k["texts"]):
+            np.save(f"{result_path}/ats/at{k}.{i}_1.npy", get_ats(t, k["title"])) # hallu
 
