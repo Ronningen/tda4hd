@@ -67,9 +67,12 @@ for d in tqdm(data):
     prompt = data[d]["prompt"]
     prompt = tokenizer.decode(tokenizer(prompt.strip(), return_tensors='pt')['input_ids'].tolist()[0]).replace("<s>", "").replace("</s>", "")
 
+    ats = get_ats('', prompt)
+    np.save(f"{ats_result_path}/at{d}.q.npy", ats)
+    
     for i, sentence in enumerate(data[d]['sentences']):
-        act = get_ats(sentence['sentence'], prompt)
-        np.save(f"{ats_result_path}/at{d}.{i}_{sentence['label']}.npy", act)
+        ats = get_ats(sentence['sentence'], prompt)
+        np.save(f"{ats_result_path}/at{d}.{i}_{sentence['label']}.npy", ats)
 
     ats = get_ats(" ".join([t["sentence"] for t in data[d]["sentences"]]), prompt)
-    np.save(f"{ats_result_path}/at{d}.p_{int(np.any([t["label"] for t in data[d]["sentences"]]))}.npy", act)
+    np.save(f"{ats_result_path}/at{d}.p_{int(np.any([t["label"] for t in data[d]["sentences"]]))}.npy", ats)

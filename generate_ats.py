@@ -54,6 +54,7 @@ for data_type in ["train", "valid", "test"]:
         #     "hallu": [get_ats(t, k["title"]) for  t in k["texts"]],
         # })
 
+        np.save(f"{result_path}/ats/at{k}.q.npy", get_ats('', k["title"]))
         np.save(f"{result_path}/ats/at{k}.p_0.npy", get_ats(t, k["title"])) # right
         for i, t in enumerate(k["texts"]):
             np.save(f"{result_path}/ats/at{k}.{i}_1.npy", get_ats(t, k["title"])) # hallu
