@@ -2,7 +2,6 @@ import ripserplusplus as rpp
 import numpy as np
 from tqdm import tqdm
 import time
-from utils import cutoff_matrix
 
 ###################################
 # RIPSER FEATURE CALCULATION FORMAT
@@ -27,6 +26,12 @@ from utils import cutoff_matrix
 #             example: "h0_t_d", "h1_t_b"
 
 ####################################
+
+def cutoff_matrix(matrix, ntokens):
+    """Return normalized submatrix of first n_tokens"""
+    matrix = matrix[:ntokens, :ntokens]
+    matrix /= matrix.sum(axis=1, keepdims=True)
+    return matrix
 
 def barcode_pop_inf(barcode):
     """Delete all infinite barcodes"""
@@ -124,7 +129,7 @@ def count_ripser_features(barcodes, feature_list=['h0_m']):
 def matrix_to_ripser(matrix, ntokens, lower_bound=0.0):
     """Convert matrix to appropriate ripser++ format"""
     matrix = cutoff_matrix(matrix, ntokens)
-    matrix = (matrix > lower_bound).astype(np.int) * matrix
+    matrix = (matrix > lower_bound).astype(np.int64) * matrix
     matrix = 1.0 - matrix
     matrix -= np.diag(np.diag(matrix)) # 0 on diagonal
     matrix = np.minimum(matrix.T, matrix) # symmetrical, edge emerges if at least one direction is working

@@ -8,7 +8,12 @@ from scipy import sparse
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
-from features_utils import cutoff_matrix
+
+def cutoff_matrix(matrix, ntokens):
+    """Return normalized submatrix of first n_tokens"""
+    matrix = matrix[:ntokens, :ntokens]
+    matrix /= matrix.sum(axis=1, keepdims=True)
+    return matrix
 
 def get_filtered_mat_list(adj_matrix, thresholds_array, ntokens):
     """
